@@ -8,25 +8,17 @@ import os
 import pandas as pd
 from scipy.signal import savgol_filter
 def smooth_curve(y, window_length=101, polyorder=3):
-      """
-      使用Savitzky-Golay滤波器平滑曲线（需scipy）
-      :param y: 待平滑数组
-      :param window_length: 平滑窗口大小（奇数，需>polyorder+1）
-      :param polyorder: 多项式拟合阶数（通常2或3）
-      :return: 平滑后数组
-      """
+      
       if len(y) <= window_length:
-          return y  # 数据点太少时不平滑
-      # 平滑曲线（保留边界点）
+          return y  
+      
       y_smooth = savgol_filter(y, window_length=window_length, polyorder=polyorder)
       y_smooth[0] = y[0]  # 保留起点（FPR=0时的TPR）
       y_smooth[-1] = y[-1]  # 保留终点（FPR=1时的TPR=1）
       return y_smooth
 
 def get_non_overlapping_path(base_path):
-    """
-    如果base_path已存在，则自动加后缀避免覆盖。
-    """
+   
     if not os.path.exists(base_path):
         return base_path
     base, ext = os.path.splitext(base_path)
@@ -40,7 +32,7 @@ def statistic_total_AUC(args, KFOLD_test_labels, KFOLD_test_scores, output_dir="
     print(f"KFOLD_test_labels长度: {len(KFOLD_test_labels)}")
     print(f"KFOLD_test_scores长度: {len(KFOLD_test_scores)}")
     
-    # 确保输入数据是numpy数组
+    
     if isinstance(KFOLD_test_labels, list):
         KFOLD_test_labels = [np.array(labels) for labels in KFOLD_test_labels]
        
@@ -51,14 +43,14 @@ def statistic_total_AUC(args, KFOLD_test_labels, KFOLD_test_scores, output_dir="
     auc_result = []#
     aupr_result = []
 
-    tprs = []#用与插值后的TPR
-    precisions = []  # 存储插值后的precision
+    tprs = []
+    precisions = []  
     
     aucs=[]
-    mean_fpr = np.linspace(0, 1,10000) # 生成0~1的10000个均匀点，用于统一插值x轴（多次实验平均时用）
+    mean_fpr = np.linspace(0, 1,10000) 
     #tpr = []
     mean_recall_pr = np.linspace(0, 1, 10000)
-    # 打印输入数据的形状和值范围
+   
     for i, (labels, scores) in enumerate(zip(KFOLD_test_labels, KFOLD_test_scores)):
     #for i in range(len(KFOLD_test_labels)):
         '''fpr, tpr, thresholds = roc_curve(KFOLD_test_labels[i], KFOLD_test_scores[i])
@@ -73,7 +65,7 @@ def statistic_total_AUC(args, KFOLD_test_labels, KFOLD_test_scores, output_dir="
         
         # 确保标签是二分类格式（0或1）
         if labels.dtype != np.int64 and labels.dtype != np.int32:
-            # 如果标签是浮点数，转换为整数
+           
             labels = labels.astype(int)
         
         # 检查数据是否有效
@@ -89,7 +81,7 @@ def statistic_total_AUC(args, KFOLD_test_labels, KFOLD_test_scores, output_dir="
         unique_labels = np.unique(labels)
         print(f"Fold {i+1} - 标签唯一值: {unique_labels}")
         
-        # 计算ROC曲线
+      
         fpr, tpr, thresholds = roc_curve(labels, scores, drop_intermediate=False)#不删除中间点
         print(f"Fold {i+1} - 最后5个FPR点: {fpr[-5:]}")
         print(f"Fold {i+1} - 最后5个TPR点: {tpr[-5:]}")
@@ -156,7 +148,7 @@ def statistic_total_AUC(args, KFOLD_test_labels, KFOLD_test_scores, output_dir="
     # 计算平均ROC曲线
     #fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))#创建两个子图
 
-    mean_tpr = np.mean(tprs, axis=0)#对多次实验的TPR取平均
+    mean_tpr = np.mean(tprs, axis=0)
     #mean_tpr[-1] = 1.0#确保最后一个点为1.0
     if len(mean_tpr) > 20:
     # 取倒数第10个点的索引和值
